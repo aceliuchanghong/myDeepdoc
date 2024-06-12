@@ -1,60 +1,62 @@
 # -*- coding: utf-8 -*-
 import json
-from deepdoc.parser.resume.entities import degrees, regions, industries
+
+from parser.resume.entities import degrees, regions, industries
 
 FIELDS = [
-"address STRING",
-"annual_salary int",
-"annual_salary_from int",
-"annual_salary_to int",
-"birth STRING",
-"card STRING",
-"certificate_obj string",
-"city STRING",
-"corporation_id int",
-"corporation_name STRING",
-"corporation_type STRING",
-"degree STRING",
-"discipline_name STRING",
-"education_obj string",
-"email STRING",
-"expect_annual_salary int",
-"expect_city_names string",
-"expect_industry_name STRING",
-"expect_position_name STRING",
-"expect_salary_from int",
-"expect_salary_to int",
-"expect_type STRING",
-"gender STRING",
-"industry_name STRING",
-"industry_names STRING",
-"is_deleted STRING",
-"is_fertility STRING",
-"is_house STRING",
-"is_management_experience STRING",
-"is_marital STRING",
-"is_oversea STRING",
-"language_obj string",
-"name STRING",
-"nation STRING",
-"phone STRING",
-"political_status STRING",
-"position_name STRING",
-"project_obj string",
-"responsibilities string",
-"salary_month int",
-"scale STRING",
-"school_name STRING",
-"self_remark string",
-"skill_obj string",
-"title_name STRING",
-"tob_resume_id STRING",
-"updated_at Timestamp",
-"wechat STRING",
-"work_obj string",
-"work_experience int",
-"work_start_time BIGINT"
+    "address STRING",
+    "annual_salary int",
+    "annual_salary_from int",
+    "annual_salary_to int",
+    "birth STRING",
+    "card STRING",
+    "certificate_obj string",
+    "city STRING",
+    "corporation_id int",
+    "corporation_name STRING",
+    "corporation_type STRING",
+    "degree STRING",
+    "discipline_name STRING",
+    "education_obj string",
+    "email STRING",
+    "expect_annual_salary int",
+    "expect_city_names string",
+    "expect_industry_name STRING",
+    "expect_position_name STRING",
+    "expect_salary_from int",
+    "expect_salary_to int",
+    "expect_type STRING",
+    "gender STRING",
+    "industry_name STRING",
+    "industry_names STRING",
+    "is_deleted STRING",
+    "is_fertility STRING",
+    "is_house STRING",
+    "is_management_experience STRING",
+    "is_marital STRING",
+    "is_oversea STRING",
+    "language_obj string",
+    "name STRING",
+    "nation STRING",
+    "phone STRING",
+    "political_status STRING",
+    "position_name STRING",
+    "project_obj string",
+    "responsibilities string",
+    "salary_month int",
+    "scale STRING",
+    "school_name STRING",
+    "self_remark string",
+    "skill_obj string",
+    "title_name STRING",
+    "tob_resume_id STRING",
+    "updated_at Timestamp",
+    "wechat STRING",
+    "work_obj string",
+    "work_experience int",
+    "work_start_time BIGINT"
 ]
+
 
 def refactor(df):
     def deal_obj(obj, k, kk):
@@ -93,17 +95,17 @@ def refactor(df):
                         x,
                         type(
                             {})) and (
-                        isinstance(
-                            x.get(c),
-                            type(
-                                {})) or not x.get(c)) else str(x).replace(
-                                    "None",
+                                                       isinstance(
+                                                           x.get(c),
+                                                           type(
+                                                               {})) or not x.get(c)) else str(x).replace(
+                        "None",
                         ""))
 
     extract(["education", "work", "certificate", "project", "language",
              "skill"])
     extract(["wechat", "phone", "is_deleted",
-            "name", "tel", "email"], "contact")
+             "name", "tel", "email"], "contact")
     extract(["nation", "expect_industry_name", "salary_month",
              "industry_ids", "is_house", "birth", "annual_salary_from",
              "annual_salary_to", "card",
@@ -160,7 +162,7 @@ def refactor(df):
     clms = list(set(clms))
 
     df = df.reindex(sorted(clms), axis=1)
-    #print(json.dumps(list(df.columns.values)), "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL")
+    # print(json.dumps(list(df.columns.values)), "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL")
     for c in clms:
         df[c] = df[c].map(
             lambda s: str(s).replace(

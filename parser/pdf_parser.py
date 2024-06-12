@@ -8,7 +8,7 @@ import torch
 import re
 import pdfplumber
 import logging
-from PIL import Image, ImageDraw
+from PIL import Image
 import numpy as np
 from timeit import default_timer as timer
 from PyPDF2 import PdfReader as pdf2_read

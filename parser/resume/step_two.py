@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-import re, copy, time, datetime, demjson3, \
-    traceback, signal
+import re, copy, time, datetime, traceback, signal
 import numpy as np
-from deepdoc.parser.resume.entities import degrees, schools, corporations
-from rag.nlp import rag_tokenizer, surname
+from parser.resume.entities import degrees, schools, corporations
+import rag_tokenizer, surname
+
+import demjson3
 from xpinyin import Pinyin
 from contextlib import contextmanager
 
@@ -94,10 +95,11 @@ def forEdu(cv):
         if n.get("degree"):
             d = degrees.get_name(n["degree"])
             if d: e["degree_kwd"] = d
-            if d == "本科" and ("专科" in deg or "专升本" in deg or "中专" in deg or "大专" in deg or re.search(r"(成人|自考|自学考试)",
-                                                                                                     n.get(
-                                                                                                         "school_name",
-                                                                                                         ""))): d = "专升本"
+            if d == "本科" and ("专科" in deg or "专升本" in deg or "中专" in deg or "大专" in deg or re.search(
+                    r"(成人|自考|自学考试)",
+                    n.get(
+                        "school_name",
+                        ""))): d = "专升本"
             if d: deg.append(d)
 
             # for first degree
@@ -492,7 +494,8 @@ def parse(cv):
         cv["name_kwd"] = name
         cv["name_pinyin_kwd"] = PY.get_pinyins(nm[:20], ' ')[:3]
         cv["name_tks"] = (
-                rag_tokenizer.tokenize(name) + " " + (" ".join(list(name)) if not re.match(r"[a-zA-Z ]+$", name) else "")
+                rag_tokenizer.tokenize(name) + " " + (
+            " ".join(list(name)) if not re.match(r"[a-zA-Z ]+$", name) else "")
         ) if name else ""
     else:
         cv["integerity_flt"] /= 2.
@@ -515,7 +518,8 @@ def parse(cv):
         cv["updated_at_dt"] = f"%s-%02d-%02d 00:00:00" % (y, int(m), int(d))
         # long text tokenize
 
-    if cv.get("responsibilities"): cv["responsibilities_ltks"] = rag_tokenizer.tokenize(rmHtmlTag(cv["responsibilities"]))
+    if cv.get("responsibilities"): cv["responsibilities_ltks"] = rag_tokenizer.tokenize(
+        rmHtmlTag(cv["responsibilities"]))
 
     # for yes or no field
     fea = []
@@ -577,4 +581,3 @@ def dealWithInt64(d):
 
     if isinstance(d, np.integer): d = int(d)
     return d
-

@@ -7,12 +7,13 @@ sys.path.insert(
         os.path.join(
             os.path.dirname(
                 os.path.abspath(__file__)),
-            '../../')))
+            '../')))
 
-from vision.seeit import draw_box
-from vision import OCR, init_in_out
+from seeit import draw_box
+from ocr import OCR
 import argparse
 import numpy as np
+from vision import init_in_out
 
 
 def main(args):

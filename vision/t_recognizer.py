@@ -1,15 +1,15 @@
 import os, sys
-from utils import get_project_base_directory
 sys.path.insert(
     0,
     os.path.abspath(
         os.path.join(
             os.path.dirname(
                 os.path.abspath(__file__)),
-            '../../')))
+            '../')))
 
 from vision.seeit import draw_box
 from vision import Recognizer, LayoutRecognizer, TableStructureRecognizer, OCR, init_in_out
+from utils import get_project_base_directory
 
 
 import argparse
