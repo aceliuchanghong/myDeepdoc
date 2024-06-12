@@ -156,7 +156,7 @@ def get_table_html(img, tb_cpns, ocr):
     %s
     </body>
     </html>
-""" % TableStructureRecognizer.construct_table(boxes, html=True)
+    """ % TableStructureRecognizer.construct_table(boxes, html=True)
     return html
 
 
@@ -169,7 +169,7 @@ if __name__ == "__main__":
                         default="./layouts_outputs")
     parser.add_argument(
         '--threshold',
-        help="A threshold to filter out detections. Default: 0.5",
+        help="A threshold to filter out detections. 阈值为0.5，那么只有置信度大于或等于0.5的检测结果才会被保留 Default: 0.5",
         default=0.5)
     parser.add_argument('--mode', help="Task mode: layout recognition or table structure recognition",
                         choices=["layout", "tsr"],
