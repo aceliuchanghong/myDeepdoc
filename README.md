@@ -9,9 +9,11 @@ watch -n 1 nvidia-smi
 nvitop
 ```
 
-# *Deep*Doc
+# DeepDoc
 
-- [*Deep*Doc](#deepdoc)
+- https://github.com/infiniflow/ragflow (from)
+
+- [DeepDoc](#deepdoc)
   - [1. 介绍](#1-介绍)
   - [2. 视觉处理](#2-视觉处理)
   - [3. 解析器](#3-解析器)
@@ -25,7 +27,7 @@ nvitop
 ```bash
 python vision/t_ocr.py -h
 usage: t_ocr.py [-h] --inputs INPUTS [--output_dir OUTPUT_DIR]
-
+eg : python vision/t_ocr.py --inputs D:\wechatWork\WXWork\1688857567577400\Cache\File\2024-06\1111.jpg
 options:
   -h, --help            show this help message and exit
   --inputs INPUTS       Directory where to store images or PDFs, or a file path to a single image or PDF
@@ -36,7 +38,7 @@ options:
 ```bash
 python vision/t_recognizer.py -h
 usage: t_recognizer.py [-h] --inputs INPUTS [--output_dir OUTPUT_DIR] [--threshold THRESHOLD] [--mode {layout,tsr}]
-
+eg: python vision/t_recognizer.py --inputs D:\wechatWork\WXWork\1688857567577400\Cache\File\2024-06\1111.jpg --threshold=0.2 --mode=tsr
 options:
   -h, --help            show this help message and exit
   --inputs INPUTS       Directory where to store images or PDFs, or a file path to a single image or PDF
@@ -45,12 +47,6 @@ options:
   --threshold THRESHOLD
                         A threshold to filter out detections. Default: 0.5
   --mode {layout,tsr}   Task mode: layout recognition or table structure recognition
-```
-
-HuggingFace为我们的模型提供服务。如果你在下载HuggingFace模型时遇到问题，这可能会有所帮助！！
-
-```bash
-export HF_ENDPOINT=https://hf-mirror.com
 ```
 
 <a name="2"></a>
