@@ -28,6 +28,7 @@ nvitop
 python vision/t_ocr.py -h
 usage: t_ocr.py [-h] --inputs INPUTS [--output_dir OUTPUT_DIR]
 eg : python vision/t_ocr.py --inputs D:\wechatWork\WXWork\1688857567577400\Cache\File\2024-06\1111.jpg
+     python vision/t_ocr.py --inputs .\input\sdt.pdf
 options:
   -h, --help            show this help message and exit
   --inputs INPUTS       Directory where to store images or PDFs, or a file path to a single image or PDF
@@ -39,6 +40,7 @@ options:
 python vision/t_recognizer.py -h
 usage: t_recognizer.py [-h] --inputs INPUTS [--output_dir OUTPUT_DIR] [--threshold THRESHOLD] [--mode {layout,tsr}]
 eg: python vision/t_recognizer.py --inputs D:\wechatWork\WXWork\1688857567577400\Cache\File\2024-06\1111.jpg --threshold=0.2 --mode=tsr
+    python vision/t_recognizer.py --inputs .\input\img.png --threshold=0.2 --mode=tsr
 options:
   -h, --help            show this help message and exit
   --inputs INPUTS       Directory where to store images or PDFs, or a file path to a single image or PDF

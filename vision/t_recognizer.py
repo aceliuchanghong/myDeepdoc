@@ -1,4 +1,5 @@
 import os, sys
+
 sys.path.insert(
     0,
     os.path.abspath(
@@ -10,7 +11,6 @@ sys.path.insert(
 from vision.seeit import draw_box
 from vision import Recognizer, LayoutRecognizer, TableStructureRecognizer, OCR, init_in_out
 from utils import get_project_base_directory
-
 
 import argparse
 import re
@@ -37,7 +37,7 @@ def main(args):
         if args.mode.lower() == "tsr":
             # lyt = [t for t in lyt if t["type"] == "table column"]
             html = get_table_html(images[i], lyt, ocr)
-            with open(outputs[i] + ".html", "w+") as f:
+            with open(outputs[i] + ".html", "w+", encoding='utf-8') as f:
                 f.write(html)
             lyt = [{
                 "type": t["label"],
