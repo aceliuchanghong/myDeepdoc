@@ -1,19 +1,5 @@
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
-#
 import os, sys
-
 from utils import get_project_base_directory
-
 sys.path.insert(
     0,
     os.path.abspath(
@@ -24,6 +10,7 @@ sys.path.insert(
 
 from vision.seeit import draw_box
 from vision import Recognizer, LayoutRecognizer, TableStructureRecognizer, OCR, init_in_out
+
 
 import argparse
 import re
@@ -48,7 +35,7 @@ def main(args):
     layouts = detr(images, float(args.threshold))
     for i, lyt in enumerate(layouts):
         if args.mode.lower() == "tsr":
-            #lyt = [t for t in lyt if t["type"] == "table column"]
+            # lyt = [t for t in lyt if t["type"] == "table column"]
             html = get_table_html(images[i], lyt, ocr)
             with open(outputs[i] + ".html", "w+") as f:
                 f.write(html)
@@ -184,7 +171,8 @@ if __name__ == "__main__":
         '--threshold',
         help="A threshold to filter out detections. Default: 0.5",
         default=0.5)
-    parser.add_argument('--mode', help="Task mode: layout recognition or table structure recognition", choices=["layout", "tsr"],
+    parser.add_argument('--mode', help="Task mode: layout recognition or table structure recognition",
+                        choices=["layout", "tsr"],
                         default="layout")
     args = parser.parse_args()
     main(args)

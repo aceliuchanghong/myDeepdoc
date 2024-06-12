@@ -23,7 +23,7 @@ nvitop
 对于来自不同领域、具有不同格式和不同检索要求的大量文档，准确的分析成为一项极具挑战性的任务。*Deep*Doc 就是为了这个目的而诞生的。到目前为止，*Deep*Doc 中有两个组成部分：视觉处理和解析器。如果您对我们的OCR、布局识别和TSR结果感兴趣，您可以运行下面的测试程序。
 
 ```bash
-python deepdoc/vision/t_ocr.py -h
+python vision/t_ocr.py -h
 usage: t_ocr.py [-h] --inputs INPUTS [--output_dir OUTPUT_DIR]
 
 options:
@@ -34,7 +34,7 @@ options:
 ```
 
 ```bash
-python deepdoc/vision/t_recognizer.py -h
+python vision/t_recognizer.py -h
 usage: t_recognizer.py [-h] --inputs INPUTS [--output_dir OUTPUT_DIR] [--threshold THRESHOLD] [--mode {layout,tsr}]
 
 options:
@@ -61,7 +61,7 @@ export HF_ENDPOINT=https://hf-mirror.com
   - **OCR（Optical Character Recognition，光学字符识别）**。由于许多文档都是以图像形式呈现的，或者至少能够转换为图像，因此OCR是文本提取的一个非常重要、基本，甚至通用的解决方案。
 
     ```bash
-    python deepdoc/vision/t_ocr.py --inputs=path_to_images_or_pdfs --output_dir=path_to_store_result
+    python vision/t_ocr.py --inputs=path_to_images_or_pdfs --output_dir=path_to_store_result
     ```
 
     输入可以是图像或PDF的目录，或者单个图像、PDF文件。您可以查看文件夹 `path_to_store_result` ，其中有演示结果位置的图像，以及包含OCR文本的txt文件。
@@ -85,7 +85,7 @@ export HF_ENDPOINT=https://hf-mirror.com
      请尝试以下命令以查看布局检测结果。
 
     ```bash
-    python deepdoc/vision/t_recognizer.py --inputs=path_to_images_or_pdfs --threshold=0.2 --mode=layout --output_dir=path_to_store_result
+    python vision/t_recognizer.py --inputs=path_to_images_or_pdfs --threshold=0.2 --mode=layout --output_dir=path_to_store_result
     ```
 
     输入可以是图像或PDF的目录，或者单个图像、PDF文件。您可以查看文件夹 `path_to_store_result` ，其中有显示检测结果的图像，如下所示：
@@ -103,7 +103,7 @@ export HF_ENDPOINT=https://hf-mirror.com
     请尝试以下命令以查看布局检测结果。
 
     ```bash
-    python deepdoc/vision/t_recognizer.py --inputs=path_to_images_or_pdfs --threshold=0.2 --mode=tsr --output_dir=path_to_store_result
+    python vision/t_recognizer.py --inputs=path_to_images_or_pdfs --threshold=0.2 --mode=tsr --output_dir=path_to_store_result
     ```
 
     输入可以是图像或PDF的目录，或者单个图像、PDF文件。您可以查看文件夹 `path_to_store_result` ，其中包含图像和html页面，这些页面展示了以下检测结果：

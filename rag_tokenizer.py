@@ -17,6 +17,7 @@ datrie安装:
 ERROR: Could not build wheels for datrie, which is required to install pyproject.toml-based projects
 https://blog.csdn.net/u013185349/article/details/130060598
 https://blog.csdn.net/ViatorSun/article/details/118699938
+需要安装到默认位置
 """
 
 
