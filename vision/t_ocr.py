@@ -21,6 +21,7 @@ def main(args):
     images, outputs = init_in_out(args)
 
     for i, img in enumerate(images):
+        print(img)
         bxs = ocr(np.array(img))
         bxs = [(line[0], line[1][0]) for line in bxs]
         bxs = [{
