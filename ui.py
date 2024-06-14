@@ -53,25 +53,34 @@ def get_ans(ans_txt, current_index):
         return content
 
 
-def ocr2(input_file, threshold, mode):
+def normal_ocr(ocr, cut_pics, threshold, output_dir):
     ocr_pic_show_layout = []
     ocr_pic_show_ans = []
-    if mode == '否':
-        test_file_pic = r'C:\Users\liuch\AppData\Local\Temp\gradio\04b3b5b7fb87723f8e3082f97905b669184cb33f\sdt.pdf_0.jpg'
-        test_file_ans = r'C:\Users\liuch\AppData\Local\Temp\gradio\04b3b5b7fb87723f8e3082f97905b669184cb33f\sdt.pdf_0.jpg.txt'
-        ocr_pic_show_layout.append(test_file_pic)
-        ocr_pic_show_ans.append(test_file_ans)
-        return ocr_pic_show_layout, ocr_pic_show_ans, ocr_pic_show_layout[0], 0
-    else:
-        return ocr_pic_show_layout, ocr_pic_show_ans, ocr_pic_show_layout[0], 0
+    for i, img in enumerate(cut_pics):
+        img_name = os.path.basename(img)
+        img = Image.open(img)
+        bxs = ocr(np.array(img))
+        bxs = [(line[0], line[1][0]) for line in bxs]
+        bxs = [{
+            "text": t,
+            "bbox": [b[0][0], b[0][1], b[1][0], b[-1][1]],
+            "type": "ocr",
+            "score": 1} for b, t in bxs if b[0][0] <= b[1][0] and b[0][1] <= b[-1][1]]
+        img = draw_box(img, bxs, ["ocr"], threshold)
+        ocr_name = os.path.join(output_dir, img_name)
+        img.save(ocr_name, quality=95)
+        ocr_pic_show_layout.append(ocr_name)
+        with open(ocr_name + ".txt", "w+", encoding='utf-8') as f:
+            f.write("\n".join([o["text"] for o in bxs]))
+        ocr_pic_show_ans.append(ocr_name + ".txt")
+        print("working on :", i)
+    return ocr_pic_show_layout, ocr_pic_show_ans
 
 
 def ocr(input_file, threshold, mode, cut_pics):
     start_default = 0
     show_table = 'tsr'
     show_layout = 'layout'
-    ocr_pic_show_layout = []
-    ocr_pic_show_ans = []
     ocr_path = 'ocr_outputs'
 
     work_dir = os.path.dirname(input_file)
@@ -83,25 +92,8 @@ def ocr(input_file, threshold, mode, cut_pics):
     print(work_dir, output_dir)
 
     if mode == '否':
-        for i, img in enumerate(cut_pics):
-            img_name = os.path.basename(img)
-            img = Image.open(img)
-            ocr = OCR()
-            bxs = ocr(np.array(img))
-            bxs = [(line[0], line[1][0]) for line in bxs]
-            bxs = [{
-                "text": t,
-                "bbox": [b[0][0], b[0][1], b[1][0], b[-1][1]],
-                "type": "ocr",
-                "score": 1} for b, t in bxs if b[0][0] <= b[1][0] and b[0][1] <= b[-1][1]]
-            img = draw_box(img, bxs, ["ocr"], threshold)
-            ocr_name = os.path.join(output_dir, img_name)
-            img.save(ocr_name, quality=95)
-            ocr_pic_show_layout.append(ocr_name)
-            with open(ocr_name + ".txt", "w+", encoding='utf-8') as f:
-                f.write("\n".join([o["text"] for o in bxs]))
-            ocr_pic_show_ans.append(ocr_name + ".txt")
-
+        ocr = OCR()
+        ocr_pic_show_layout, ocr_pic_show_ans = normal_ocr(ocr, cut_pics, threshold, output_dir)
         return ocr_pic_show_layout, ocr_pic_show_ans, ocr_pic_show_layout[start_default], start_default
 
 
@@ -114,7 +106,7 @@ def create_app():
             pic_show = gr.Gallery(label='文件预览', scale=5, columns=4, container=True, preview=True)
         # 调控界面
         with gr.Row():
-            threshold_slider = gr.Slider(label='置信度', minimum=0.2, interactive=True, maximum=0.9, value=0.5,
+            threshold_slider = gr.Slider(label='置信度', minimum=0.2, interactive=True, maximum=0.9, value=0.9,
                                          step=0.1, scale=4, info="设置置信度")
             str_mode = gr.Dropdown(label='表格模式', choices=['是', '否'], value='否', scale=2, interactive=True,
                                    info='图片开启表格识别,精度下降')
@@ -134,6 +126,7 @@ def create_app():
             pic_ocr = gr.Image(label='识别预览', scale=5)
             ans = gr.Textbox(label='识别结果', scale=5, lines=20)
         # movement
+        str_mode.change(fn=lambda x: 0.5 if x == '是' else 0.9, inputs=str_mode, outputs=threshold_slider)
         file_ori.change(fn=process_file, inputs=file_ori, outputs=[pic_show, cut_pic])
         submit_button.click(fn=ocr, inputs=[file_ori, threshold_slider, str_mode, cut_pic],
                             outputs=[ans_pic, ans_txt, pic_ocr, current_index])
