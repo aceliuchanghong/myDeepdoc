@@ -14,7 +14,7 @@ def process_pdf(file_obj, zoomin=3):
               enumerate(this_pdf.pages)]
     for i, page in enumerate(images):
         filename = os.path.split(file_obj)[0] + "/" + os.path.split(file_obj)[-1] + f"_show_{i}.jpg"
-        page.save(filename, quality=99)
+        page.save(filename, quality=95)
         outputs.append(filename)
     return outputs
 
@@ -53,27 +53,43 @@ def get_ans(ans_txt, current_index):
         return content
 
 
+def ocr_task(ocr, img_path, threshold, output_dir):
+    img_name = os.path.basename(img_path)
+    img = Image.open(img_path)
+    bxs = ocr(np.array(img))
+    bxs = [(line[0], line[1][0]) for line in bxs]
+    bxs = [{
+        "text": t,
+        "bbox": [b[0][0], b[0][1], b[1][0], b[-1][1]],
+        "type": "ocr",
+        "score": 1} for b, t in bxs if b[0][0] <= b[1][0] and b[0][1] <= b[-1][1]]
+    img = draw_box(img, bxs, ["ocr"], threshold)
+    ocr_name = os.path.join(output_dir, img_name)
+    img.save(ocr_name, quality=95)
+    with open(ocr_name + ".txt", "w+", encoding='utf-8') as f:
+        f.write("\n".join([o["text"] for o in bxs]))
+    # print(f"Processed image: {img_name}")
+    return ocr_name
+
+
+import concurrent.futures
+from tqdm import tqdm
+
+
 def normal_ocr(ocr, cut_pics, threshold, output_dir):
     ocr_pic_show_layout = []
     ocr_pic_show_ans = []
-    for i, img in enumerate(cut_pics):
-        img_name = os.path.basename(img)
-        img = Image.open(img)
-        bxs = ocr(np.array(img))
-        bxs = [(line[0], line[1][0]) for line in bxs]
-        bxs = [{
-            "text": t,
-            "bbox": [b[0][0], b[0][1], b[1][0], b[-1][1]],
-            "type": "ocr",
-            "score": 1} for b, t in bxs if b[0][0] <= b[1][0] and b[0][1] <= b[-1][1]]
-        img = draw_box(img, bxs, ["ocr"], threshold)
-        ocr_name = os.path.join(output_dir, img_name)
-        img.save(ocr_name, quality=95)
-        ocr_pic_show_layout.append(ocr_name)
-        with open(ocr_name + ".txt", "w+", encoding='utf-8') as f:
-            f.write("\n".join([o["text"] for o in bxs]))
-        ocr_pic_show_ans.append(ocr_name + ".txt")
-        print("working on :", i)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        # 提交任务到线程池
+        futures = [executor.submit(ocr_task, ocr, img, threshold, output_dir) for img in cut_pics]
+
+        # 使用tqdm创建进度条
+        for future in tqdm(concurrent.futures.as_completed(futures), total=len(cut_pics)):
+            ocr_name = future.result()
+            ocr_pic_show_layout.append(ocr_name)
+            ocr_pic_show_ans.append(ocr_name + ".txt")
+
+    # print("OCR finished")
     return ocr_pic_show_layout, ocr_pic_show_ans
 
 
@@ -88,8 +104,8 @@ def ocr(input_file, threshold, mode, cut_pics):
     output_dir = os.path.join(work_dir, ocr_path)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    print(input_file, threshold, mode, cut_pics)
-    print(work_dir, output_dir)
+    # print(input_file, threshold, mode, cut_pics)
+    # print(work_dir, output_dir)
 
     if mode == '否':
         ocr = OCR()
