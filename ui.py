@@ -2,6 +2,8 @@ import gradio as gr
 import pdfplumber
 import os
 import numpy as np
+
+from vision import TableStructureRecognizer
 from vision.ocr import OCR
 from vision.seeit import draw_box
 from PIL import Image
@@ -111,6 +113,11 @@ def ocr(input_file, threshold, mode, cut_pics):
         ocr = OCR()
         ocr_pic_show_layout, ocr_pic_show_ans = normal_ocr(ocr, cut_pics, threshold, output_dir)
         return ocr_pic_show_layout, ocr_pic_show_ans, ocr_pic_show_layout[start_default], start_default
+    else:
+        print("表格模式")
+        labels = TableStructureRecognizer.labels
+        detr = TableStructureRecognizer()
+        ocr = OCR()
 
 
 def create_app():
