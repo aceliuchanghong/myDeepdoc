@@ -60,7 +60,7 @@ class RAGFlowDocxParser:
         if max_type == "Nu":
             for r in range(1, len(df)):
                 tys = Counter([blockType(str(df.iloc[r, j]))
-                              for j in range(len(df.iloc[r, :]))])
+                               for j in range(len(df.iloc[r, :]))])
                 tys = max(tys.items(), key=lambda x: x[1])[0]
                 if tys != max_type:
                     hdrows.append(r)

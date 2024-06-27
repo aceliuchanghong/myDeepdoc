@@ -2,11 +2,72 @@ import gradio as gr
 import pdfplumber
 import os
 import numpy as np
-
-from vision import TableStructureRecognizer
+import concurrent.futures
+from tqdm import tqdm
+from vision import TableStructureRecognizer, init_in_out, Recognizer
 from vision.ocr import OCR
 from vision.seeit import draw_box
 from PIL import Image
+import pandas as pd
+import re
+
+
+def get_table_data(img, tb_cpns, ocr):
+    boxes = ocr(np.array(img))
+    boxes = Recognizer.sort_Y_firstly(
+        [{"x0": b[0][0], "x1": b[1][0],
+          "top": b[0][1], "text": t[0],
+          "bottom": b[-1][1],
+          "layout_type": "table",
+          "page_number": 0} for b, t in boxes if b[0][0] <= b[1][0] and b[0][1] <= b[-1][1]],
+        np.mean([b[-1][1] - b[0][1] for b, _ in boxes]) / 3
+    )
+
+    def gather(kwd, fzy=10, ption=0.6):
+        nonlocal boxes
+        eles = Recognizer.sort_Y_firstly(
+            [r for r in tb_cpns if re.match(kwd, r["label"])], fzy)
+        eles = Recognizer.layouts_cleanup(boxes, eles, 5, ption)
+        return Recognizer.sort_Y_firstly(eles, 0)
+
+    headers = gather(r".*header$")
+    rows = gather(r".* (row|header)")
+    spans = gather(r".*spanning")
+    clmns = sorted([r for r in tb_cpns if re.match(
+        r"table column$", r["label"])], key=lambda x: x["x0"])
+    clmns = Recognizer.layouts_cleanup(boxes, clmns, 5, 0.5)
+
+    for b in boxes:
+        ii = Recognizer.find_overlapped_with_threashold(b, rows, thr=0.3)
+        if ii is not None:
+            b["R"] = ii
+            b["R_top"] = rows[ii]["top"]
+            b["R_bott"] = rows[ii]["bottom"]
+
+        ii = Recognizer.find_overlapped_with_threashold(b, headers, thr=0.3)
+        if ii is not None:
+            b["H_top"] = headers[ii]["top"]
+            b["H_bott"] = headers[ii]["bottom"]
+            b["H_left"] = headers[ii]["x0"]
+            b["H_right"] = headers[ii]["x1"]
+            b["H"] = ii
+
+        ii = Recognizer.find_horizontally_tightest_fit(b, clmns)
+        if ii is not None:
+            b["C"] = ii
+            b["C_left"] = clmns[ii]["x0"]
+            b["C_right"] = clmns[ii]["x1"]
+
+        ii = Recognizer.find_overlapped_with_threashold(b, spans, thr=0.3)
+        if ii is not None:
+            b["H_top"] = spans[ii]["top"]
+            b["H_bott"] = spans[ii]["bottom"]
+            b["H_left"] = spans[ii]["x0"]
+            b["H_right"] = spans[ii]["x1"]
+            b["SP"] = ii
+
+    table_data = TableStructureRecognizer.construct_table(boxes, html=False)
+    return table_data
 
 
 def process_pdf(file_obj, zoomin=3):
@@ -74,10 +135,6 @@ def ocr_task(ocr, img_path, threshold, output_dir):
     return ocr_name
 
 
-import concurrent.futures
-from tqdm import tqdm
-
-
 def normal_ocr(ocr, cut_pics, threshold, output_dir):
     ocr_pic_show_layout = []
     ocr_pic_show_ans = []
@@ -95,29 +152,64 @@ def normal_ocr(ocr, cut_pics, threshold, output_dir):
     return ocr_pic_show_layout, ocr_pic_show_ans
 
 
-def ocr(input_file, threshold, mode, cut_pics):
+def ocr_tsr_task(ocr, img_path, threshold, output_dir):
+    img_name = os.path.basename(img_path)
+    img = Image.open(img_path)
+    bxs = ocr(np.array(img))
+    bxs = [(line[0], line[1][0]) for line in bxs]
+    bxs = [{
+        "text": t,
+        "bbox": [b[0][0], b[0][1], b[1][0], b[-1][1]],
+        "type": "ocr",
+        "score": 1} for b, t in bxs if b[0][0] <= b[1][0] and b[0][1] <= b[-1][1]]
+    img = draw_box(img, bxs, ["ocr"], threshold)
+    ocr_name = os.path.join(output_dir, img_name)
+    img.save(ocr_name, quality=95)
+    with open(ocr_name + ".txt", "w+", encoding='utf-8') as f:
+        f.write("\n".join([o["text"] for o in bxs]))
+    # print(f"Processed image: {img_name}")
+    return ocr_name
+
+
+def normal_tsr_ocr(ocr, cut_pics, threshold, output_dir):
+    ocr_pic_show_layout = []
+    ocr_pic_show_ans = []
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        # 提交任务到线程池
+        futures = [executor.submit(ocr_tsr_task, ocr, img, threshold, output_dir) for img in cut_pics]
+
+        # 使用tqdm创建进度条
+        for future in tqdm(concurrent.futures.as_completed(futures), total=len(cut_pics)):
+            ocr_name = future.result()
+            ocr_pic_show_layout.append(ocr_name)
+            ocr_pic_show_ans.append(ocr_name + ".txt")
+
+    # print("OCR finished")
+    return ocr_pic_show_layout, ocr_pic_show_ans
+
+
+def ocr_it(input_file, threshold, mode, cut_pics):
     start_default = 0
     show_table = 'tsr'
-    show_layout = 'layout'
-    ocr_path = 'ocr_outputs'
+    ocr_path = './ocr_outputs'
+    tsr_path = './layouts_outputs'
 
     work_dir = os.path.dirname(input_file)
     file_name = os.path.basename(input_file)
     output_dir = os.path.join(work_dir, ocr_path)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    # print(input_file, threshold, mode, cut_pics)
-    # print(work_dir, output_dir)
+    print(input_file, threshold, mode)
+    print(cut_pics)
+    ocr = OCR()
 
     if mode == '否':
-        ocr = OCR()
         ocr_pic_show_layout, ocr_pic_show_ans = normal_ocr(ocr, cut_pics, threshold, output_dir)
         return ocr_pic_show_layout, ocr_pic_show_ans, ocr_pic_show_layout[start_default], start_default
     else:
         print("表格模式")
-        labels = TableStructureRecognizer.labels
-        detr = TableStructureRecognizer()
-        ocr = OCR()
+        ocr_pic_show_layout, ocr_pic_show_ans = normal_tsr_ocr(ocr, cut_pics, threshold, tsr_path)
+        return ocr_pic_show_layout, ocr_pic_show_ans, ocr_pic_show_layout[start_default], start_default
 
 
 def create_app():
@@ -151,7 +243,7 @@ def create_app():
         # movement
         str_mode.change(fn=lambda x: 0.5 if x == '是' else 0.9, inputs=str_mode, outputs=threshold_slider)
         file_ori.change(fn=process_file, inputs=file_ori, outputs=[pic_show, cut_pic])
-        submit_button.click(fn=ocr, inputs=[file_ori, threshold_slider, str_mode, cut_pic],
+        submit_button.click(fn=ocr_it, inputs=[file_ori, threshold_slider, str_mode, cut_pic],
                             outputs=[ans_pic, ans_txt, pic_ocr, current_index])
         old_one.click(fn=select_file_old, inputs=[ans_pic, current_index], outputs=[pic_ocr, current_index])
         next_one.click(fn=select_file_new, inputs=[ans_pic, current_index], outputs=[pic_ocr, current_index])

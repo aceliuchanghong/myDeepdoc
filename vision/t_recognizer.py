@@ -19,6 +19,8 @@ import numpy as np
 
 def main(args):
     images, outputs = init_in_out(args)
+    print(images)
+    print(outputs)
     if args.mode.lower() == "layout":
         labels = LayoutRecognizer.labels
         detr = Recognizer(
