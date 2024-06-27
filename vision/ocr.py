@@ -11,8 +11,6 @@ from vision.postprocess import build_post_process
 from utils import get_project_base_directory, cron_logger
 
 
-
-
 def transform(data, ops=None):
     """ transform """
     if ops is None:
@@ -456,14 +454,8 @@ class OCR(object):
     def __init__(self, model_dir=None):
         """
         If you have trouble downloading HuggingFace models, -_^ this might help!!
-
         For Linux:
         export HF_ENDPOINT=https://hf-mirror.com
-
-        For Windows:
-        Good luck
-        ^_-
-
         """
         if not model_dir:
             try:
@@ -473,9 +465,11 @@ class OCR(object):
                 self.text_detector = TextDetector(model_dir)
                 self.text_recognizer = TextRecognizer(model_dir)
             except Exception as e:
-                model_dir = snapshot_download(repo_id="InfiniFlow/deepdoc",
-                                              local_dir=os.path.join(get_project_base_directory(), "rag/res/deepdoc"),
-                                              local_dir_use_symlinks=False)
+                model_dir = snapshot_download(
+                    repo_id="InfiniFlow/deepdoc",
+                    local_dir=os.path.join(get_project_base_directory(), "rag/res/deepdoc"),
+                    local_dir_use_symlinks=False
+                )
                 self.text_detector = TextDetector(model_dir)
                 self.text_recognizer = TextRecognizer(model_dir)
 

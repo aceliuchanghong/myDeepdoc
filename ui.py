@@ -4,7 +4,7 @@ import os
 import numpy as np
 import concurrent.futures
 from tqdm import tqdm
-from vision import TableStructureRecognizer, init_in_out, Recognizer
+from vision import TableStructureRecognizer, Recognizer
 from vision.ocr import OCR
 from vision.seeit import draw_box
 from PIL import Image
@@ -112,9 +112,9 @@ def select_file_new(file_dict, current_index):
 def get_ans(ans_txt, current_index):
     current_index = int(current_index)
     file_path = ans_txt[current_index]
-    print('file_path:', file_path)
+    # print('file_path:', file_path)
     if file_path.endswith('.csv'):
-        print(pd.read_csv(file_path))
+        # print(pd.read_csv(file_path))
         return '', pd.read_csv(file_path)
     else:
         with open(file_path, 'r', encoding='utf-8') as f:
@@ -193,7 +193,7 @@ def normal_tsr_ocr(ocr, cut_pics, threshold, output_dir):
         # ocr_pic_show_ans.append(df_split)
         table_data_paths.append(csv_path)
 
-        print("save result to: " + csv_path)
+        # print("save result to: " + csv_path)
         lyt = [{
             "type": t["label"],
             "bbox": [t["x0"], t["top"], t["x1"], t["bottom"]],
@@ -224,9 +224,8 @@ def ocr_it(input_file, threshold, mode, cut_pics):
         ocr_pic_show_layout, ocr_pic_show_ans = normal_ocr(ocr, cut_pics, threshold, output_dir)
         return ocr_pic_show_layout, ocr_pic_show_ans, ocr_pic_show_layout[start_default], start_default
     else:
-        # print("表格模式")
         ocr_pic_show_layout, table_data_paths = normal_tsr_ocr(ocr, cut_pics, threshold, tsr_output_dir)
-        print(ocr_pic_show_layout)
+        # print(ocr_pic_show_layout)
         return ocr_pic_show_layout, table_data_paths, ocr_pic_show_layout[start_default], start_default
 
 
@@ -259,9 +258,16 @@ def create_app():
             pic_ocr = gr.Image(label='识别预览', scale=5)
             ans = gr.Textbox(info='识别结果', scale=5, lines=20)
             # 显示表格数据
-            ans_table = gr.DataFrame(label='表格结果', scale=5)
+            ans_table = gr.DataFrame(label='表格结果', scale=5, visible=False)
+
+        def update_components(mode):
+            threshold = 0.5 if mode == '是' else 0.9
+            ans_visible = mode == '否'
+            ans_table_visible = mode == '是'
+            return threshold, gr.update(visible=ans_visible), gr.update(visible=ans_table_visible)
+
         # movement
-        str_mode.change(fn=lambda x: 0.5 if x == '是' else 0.9, inputs=str_mode, outputs=threshold_slider)
+        str_mode.change(fn=update_components, inputs=str_mode, outputs=[threshold_slider, ans, ans_table])
         file_ori.change(fn=process_file, inputs=file_ori, outputs=[pic_show, cut_pic])
         submit_button.click(fn=ocr_it, inputs=[file_ori, threshold_slider, str_mode, cut_pic],
                             outputs=[ans_pic, ans_txt, pic_ocr, current_index])
