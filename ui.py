@@ -111,9 +111,15 @@ def select_file_new(file_dict, current_index):
 
 def get_ans(ans_txt, current_index):
     current_index = int(current_index)
-    with open(ans_txt[current_index], 'r', encoding='utf-8') as f:
-        content = f.read()
-        return content
+    file_path = ans_txt[current_index]
+    print('file_path:', file_path)
+    if file_path.endswith('.csv'):
+        print(pd.read_csv(file_path))
+        return '', pd.read_csv(file_path)
+    else:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            return content, pd.DataFrame()
 
 
 def ocr_task(ocr, img_path, threshold, output_dir):
@@ -158,7 +164,9 @@ def normal_tsr_ocr(ocr, cut_pics, threshold, output_dir):
     # image对象
     ocr_pic_pil_image = []
     # pd对象
-    ocr_pic_show_ans = []
+    # ocr_pic_show_ans = []
+    # 保存表格数据的文件路径列表
+    table_data_paths = []
 
     labels = TableStructureRecognizer.labels
     detr = TableStructureRecognizer()
@@ -176,27 +184,32 @@ def normal_tsr_ocr(ocr, cut_pics, threshold, output_dir):
 
     for i, lyt in enumerate(layouts):
         table_data = get_table_data(ocr_pic_pil_image[i], lyt, ocr)
-        print(table_data)
+        print('table_data:', table_data)
         df = pd.DataFrame(table_data, columns=['data'])
         df_split = df['data'].str.split(';', expand=True)
         csv_path = ocr_pic_show_layout[i] + ".csv"
         df_split.to_csv(csv_path, index=True)
-        ocr_pic_show_ans.append(df_split)
+
+        # ocr_pic_show_ans.append(df_split)
+        table_data_paths.append(csv_path)
+
         print("save result to: " + csv_path)
         lyt = [{
             "type": t["label"],
             "bbox": [t["x0"], t["top"], t["x1"], t["bottom"]],
             "score": t["score"]
         } for t in lyt]
+        generate_img = draw_box(ocr_pic_pil_image[i], lyt, labels, float(threshold))
+        generate_img.save(ocr_pic_show_layout[i], quality=95)
 
-    return ocr_pic_show_layout, ocr_pic_show_ans
+    return ocr_pic_show_layout, table_data_paths
 
 
 def ocr_it(input_file, threshold, mode, cut_pics):
     start_default = 0
     show_table = 'tsr'
-    ocr_path = './ocr_outputs'
-    tsr_output_dir = './layouts_outputs'
+    ocr_path = 'ocr_outputs'
+    tsr_output_dir = 'layouts_outputs'
 
     work_dir = os.path.dirname(input_file)
     file_name = os.path.basename(input_file)
@@ -211,9 +224,10 @@ def ocr_it(input_file, threshold, mode, cut_pics):
         ocr_pic_show_layout, ocr_pic_show_ans = normal_ocr(ocr, cut_pics, threshold, output_dir)
         return ocr_pic_show_layout, ocr_pic_show_ans, ocr_pic_show_layout[start_default], start_default
     else:
-        print("表格模式")
-        ocr_pic_show_layout, ocr_pic_show_ans = normal_tsr_ocr(ocr, cut_pics, threshold, tsr_output_dir)
-        return ocr_pic_show_layout, ocr_pic_show_ans, ocr_pic_show_layout[start_default], start_default
+        # print("表格模式")
+        ocr_pic_show_layout, table_data_paths = normal_tsr_ocr(ocr, cut_pics, threshold, tsr_output_dir)
+        print(ocr_pic_show_layout)
+        return ocr_pic_show_layout, table_data_paths, ocr_pic_show_layout[start_default], start_default
 
 
 def create_app():
@@ -243,7 +257,9 @@ def create_app():
         # 结果页面
         with gr.Row():
             pic_ocr = gr.Image(label='识别预览', scale=5)
-            ans = gr.Textbox(label='识别结果', scale=5, lines=20)
+            ans = gr.Textbox(info='识别结果', scale=5, lines=20)
+            # 显示表格数据
+            ans_table = gr.DataFrame(label='表格结果', scale=5)
         # movement
         str_mode.change(fn=lambda x: 0.5 if x == '是' else 0.9, inputs=str_mode, outputs=threshold_slider)
         file_ori.change(fn=process_file, inputs=file_ori, outputs=[pic_show, cut_pic])
@@ -251,7 +267,7 @@ def create_app():
                             outputs=[ans_pic, ans_txt, pic_ocr, current_index])
         old_one.click(fn=select_file_old, inputs=[ans_pic, current_index], outputs=[pic_ocr, current_index])
         next_one.click(fn=select_file_new, inputs=[ans_pic, current_index], outputs=[pic_ocr, current_index])
-        pic_ocr.change(fn=get_ans, inputs=[ans_txt, current_index], outputs=ans)
+        pic_ocr.change(fn=get_ans, inputs=[ans_txt, current_index], outputs=[ans, ans_table])
     return demo
 
 
