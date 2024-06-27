@@ -35,6 +35,7 @@ def main(args):
         ocr = OCR()
 
     layouts = detr(images, float(args.threshold))
+    print(layouts)
     for i, lyt in enumerate(layouts):
         if args.mode.lower() == "tsr":
             # lyt = [t for t in lyt if t["type"] == "table column"]

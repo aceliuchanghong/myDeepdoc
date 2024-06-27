@@ -152,39 +152,43 @@ def normal_ocr(ocr, cut_pics, threshold, output_dir):
     return ocr_pic_show_layout, ocr_pic_show_ans
 
 
-def ocr_tsr_task(ocr, img_path, threshold, output_dir):
-    img_name = os.path.basename(img_path)
-    img = Image.open(img_path)
-    bxs = ocr(np.array(img))
-    bxs = [(line[0], line[1][0]) for line in bxs]
-    bxs = [{
-        "text": t,
-        "bbox": [b[0][0], b[0][1], b[1][0], b[-1][1]],
-        "type": "ocr",
-        "score": 1} for b, t in bxs if b[0][0] <= b[1][0] and b[0][1] <= b[-1][1]]
-    img = draw_box(img, bxs, ["ocr"], threshold)
-    ocr_name = os.path.join(output_dir, img_name)
-    img.save(ocr_name, quality=95)
-    with open(ocr_name + ".txt", "w+", encoding='utf-8') as f:
-        f.write("\n".join([o["text"] for o in bxs]))
-    # print(f"Processed image: {img_name}")
-    return ocr_name
-
-
 def normal_tsr_ocr(ocr, cut_pics, threshold, output_dir):
+    # 展示图片
     ocr_pic_show_layout = []
+    # image对象
+    ocr_pic_pil_image = []
+    # pd对象
     ocr_pic_show_ans = []
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        # 提交任务到线程池
-        futures = [executor.submit(ocr_tsr_task, ocr, img, threshold, output_dir) for img in cut_pics]
 
-        # 使用tqdm创建进度条
-        for future in tqdm(concurrent.futures.as_completed(futures), total=len(cut_pics)):
-            ocr_name = future.result()
-            ocr_pic_show_layout.append(ocr_name)
-            ocr_pic_show_ans.append(ocr_name + ".txt")
+    labels = TableStructureRecognizer.labels
+    detr = TableStructureRecognizer()
 
-    # print("OCR finished")
+    for pic in cut_pics:
+        # 之后layout的地址
+        should_output = os.path.join(output_dir, os.path.basename(pic))
+        # image对象
+        img = Image.open(pic)
+
+        ocr_pic_show_layout.append(should_output)
+        ocr_pic_pil_image.append(img)
+
+    layouts = detr(ocr_pic_pil_image, float(threshold))
+
+    for i, lyt in enumerate(layouts):
+        table_data = get_table_data(ocr_pic_pil_image[i], lyt, ocr)
+        print(table_data)
+        df = pd.DataFrame(table_data, columns=['data'])
+        df_split = df['data'].str.split(';', expand=True)
+        csv_path = ocr_pic_show_layout[i] + ".csv"
+        df_split.to_csv(csv_path, index=True)
+        ocr_pic_show_ans.append(df_split)
+        print("save result to: " + csv_path)
+        lyt = [{
+            "type": t["label"],
+            "bbox": [t["x0"], t["top"], t["x1"], t["bottom"]],
+            "score": t["score"]
+        } for t in lyt]
+
     return ocr_pic_show_layout, ocr_pic_show_ans
 
 
@@ -192,7 +196,7 @@ def ocr_it(input_file, threshold, mode, cut_pics):
     start_default = 0
     show_table = 'tsr'
     ocr_path = './ocr_outputs'
-    tsr_path = './layouts_outputs'
+    tsr_output_dir = './layouts_outputs'
 
     work_dir = os.path.dirname(input_file)
     file_name = os.path.basename(input_file)
@@ -208,7 +212,7 @@ def ocr_it(input_file, threshold, mode, cut_pics):
         return ocr_pic_show_layout, ocr_pic_show_ans, ocr_pic_show_layout[start_default], start_default
     else:
         print("表格模式")
-        ocr_pic_show_layout, ocr_pic_show_ans = normal_tsr_ocr(ocr, cut_pics, threshold, tsr_path)
+        ocr_pic_show_layout, ocr_pic_show_ans = normal_tsr_ocr(ocr, cut_pics, threshold, tsr_output_dir)
         return ocr_pic_show_layout, ocr_pic_show_ans, ocr_pic_show_layout[start_default], start_default
 
 
