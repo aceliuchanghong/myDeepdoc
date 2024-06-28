@@ -12,7 +12,11 @@
 python ui.py
 ```
 
+表格样式识别UI
+
 ![img.png](zutils/imgs/img.png)
+
+文档样式识别UI
 
 ![img_1.png](zutils/imgs/img_1.png)
 
