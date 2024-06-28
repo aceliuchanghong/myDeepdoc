@@ -11,6 +11,16 @@ from PIL import Image
 import pandas as pd
 import re
 
+_instance = None
+
+
+def get_instance():
+    global _instance
+    if _instance is None:
+        ocr = OCR()
+        _instance = ocr
+    return _instance
+
 
 def get_table_data(img, tb_cpns, ocr):
     boxes = ocr(np.array(img))
@@ -218,7 +228,7 @@ def ocr_it(input_file, threshold, mode, cut_pics):
         os.makedirs(output_dir)
     print(input_file, threshold, mode)
     print(cut_pics)
-    ocr = OCR()
+    ocr = get_instance()
 
     if mode == '否':
         ocr_pic_show_layout, ocr_pic_show_ans = normal_ocr(ocr, cut_pics, threshold, output_dir)

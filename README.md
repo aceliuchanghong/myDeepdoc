@@ -1,3 +1,21 @@
+### Feature
+
+- UI界面
+- 程序整理
+- 模型放置
+- 依赖处理
+- 表格生成
+
+### start
+
+```shell
+python ui.py
+```
+
+![img.png](zutils/imgs/img.png)
+
+![img_1.png](zutils/imgs/img_1.png)
+
 ```shell
 cd deepdoc
 conda create -n myDeepdoc python=3.11
@@ -8,14 +26,6 @@ pip list --format=freeze > requirements.txt
 watch -n 1 nvidia-smi
 nvitop
 ```
-
-### Feature
-
-- UI界面
-- 程序整理
-- 模型放置
-- 依赖处理
-- 配合函数增加
 
 # DeepDoc
 
@@ -69,11 +79,11 @@ options:
 
 - **OCR（Optical Character Recognition，光学字符识别）**。由于许多文档都是以图像形式呈现的，或者至少能够转换为图像，因此OCR是文本提取的一个非常重要、基本，甚至通用的解决方案。
 
-  ```bash
-  python vision/t_ocr.py --inputs=path_to_images_or_pdfs --output_dir=path_to_store_result
-  ```
+```bash
+python vision/t_ocr.py --inputs=path_to_images_or_pdfs --output_dir=path_to_store_result
+```
 
-  输入可以是图像或PDF的目录，或者单个图像、PDF文件。您可以查看文件夹 `path_to_store_result` ，其中有演示结果位置的图像，以及包含OCR文本的txt文件。
+输入可以是图像或PDF的目录，或者单个图像、PDF文件。您可以查看文件夹 `path_to_store_result` ，其中有演示结果位置的图像，以及包含OCR文本的txt文件。
 
   <div align="center" style="margin-top:20px;margin-bottom:20px;">
   <img src="https://github.com/infiniflow/ragflow/assets/12318111/f25bee3d-aaf7-4102-baf5-d5208361d110" width="900"/>
