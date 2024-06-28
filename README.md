@@ -12,13 +12,15 @@
 python ui.py
 ```
 
-表格样式识别UI
+`表格样式识别UI`
 
 ![img.png](zutils/imgs/img.png)
 
-文档样式识别UI
+`文档样式识别UI`
 
 ![img_1.png](zutils/imgs/img_1.png)
+
+### install
 
 ```shell
 cd deepdoc
@@ -31,19 +33,18 @@ watch -n 1 nvidia-smi
 nvitop
 ```
 
-# DeepDoc
+### DeepDoc
 
 - https://github.com/infiniflow/ragflow (from)
 
 - [DeepDoc](#deepdoc)
     - [1. 介绍](#1-介绍)
     - [2. 视觉处理](#2-视觉处理)
-    - [3. 解析器](#3-解析器)
-        - [简历](#简历)
+
 
 <a name="1"></a>
 
-## 1. 介绍
+#### 1. 介绍
 
 对于来自不同领域、具有不同格式和不同检索要求的大量文档，准确的分析成为一项极具挑战性的任务。*Deep*Doc 就是为了这个目的而诞生的。到目前为止，
 *Deep*Doc 中有两个组成部分：视觉处理和解析器。如果您对我们的OCR、布局识别和TSR结果感兴趣，您可以运行下面的测试程序。
@@ -77,7 +78,7 @@ options:
 
 <a name="2"></a>
 
-## 2. 视觉处理
+#### 2. 视觉处理
 
 作为人类，我们使用视觉信息来解决问题。
 
