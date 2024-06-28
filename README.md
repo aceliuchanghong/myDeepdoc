@@ -6,27 +6,31 @@
 - 依赖处理
 - 表格生成
 
-### start
+### Start
 
 ```shell
+# vi utils.py ==>修改 PROJECT_BASE
 python ui.py
+or
+nohup python ui.py > deepdoc.log &
 ```
 
-`表格样式识别UI`
+- 表格样式识别UI
 
 ![img.png](zutils/imgs/img.png)
 
-`文档样式识别UI`
+- 文档样式识别UI
 
 ![img_1.png](zutils/imgs/img_1.png)
 
-### install
+### Install
 
 ```shell
 cd deepdoc
 conda create -n myDeepdoc python=3.11
 conda activate myDeepdoc
-pip install -r requirements.txt --proxy=127.0.0.1:10809
+# 删除里面有win的3个包
+pip install -r requirements.txt
 pip freeze > requirements.txt
 pip list --format=freeze > requirements.txt
 watch -n 1 nvidia-smi
@@ -40,7 +44,6 @@ nvitop
 - [DeepDoc](#deepdoc)
     - [1. 介绍](#1-介绍)
     - [2. 视觉处理](#2-视觉处理)
-
 
 <a name="1"></a>
 
@@ -110,9 +113,9 @@ python vision/t_ocr.py --inputs=path_to_images_or_pdfs --output_dir=path_to_stor
 
   请尝试以下命令以查看布局检测结果。
 
-  ```bash
-  python vision/t_recognizer.py --inputs=path_to_images_or_pdfs --threshold=0.2 --mode=layout --output_dir=path_to_store_result
-  ```
+```bash
+python vision/t_recognizer.py --inputs=path_to_images_or_pdfs --threshold=0.2 --mode=layout --output_dir=path_to_store_result
+```
 
   输入可以是图像或PDF的目录，或者单个图像、PDF文件。您可以查看文件夹 `path_to_store_result` ，其中有显示检测结果的图像，如下所示：
   <div align="center" style="margin-top:20px;margin-bottom:20px;">
@@ -129,9 +132,9 @@ python vision/t_ocr.py --inputs=path_to_images_or_pdfs --output_dir=path_to_stor
 
   请尝试以下命令以查看布局检测结果。
 
-  ```bash
-  python vision/t_recognizer.py --inputs=path_to_images_or_pdfs --threshold=0.2 --mode=tsr --output_dir=path_to_store_result
-  ```
+```bash
+python vision/t_recognizer.py --inputs=path_to_images_or_pdfs --threshold=0.2 --mode=tsr --output_dir=path_to_store_result
+```
 
   输入可以是图像或PDF的目录，或者单个图像、PDF文件。您可以查看文件夹 `path_to_store_result` ，其中包含图像和html页面，这些页面展示了以下检测结果：
 
