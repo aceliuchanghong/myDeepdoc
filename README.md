@@ -10,9 +10,9 @@
 
 ```shell
 # vi utils.py ==>修改 PROJECT_BASE
-python ui.py
+python ui_deepdoc.py
 or
-nohup python ui.py > deepdoc.log &
+nohup python ui_deepdoc.py > deepdoc.log &
 ```
 
 - 表格样式识别UI
@@ -32,9 +32,11 @@ conda activate myDeepdoc
 # 删除里面有win的3个包
 pip install -r requirements.txt
 pip freeze > requirements.txt
-pip list --format=freeze > requirements.txt
-watch -n 1 nvidia-smi
-nvitop
+# 可能有一些报错:please enable stickiness to ensure that all requests from the same user are routed to the same instance.
+export no_proxy="localhost,127.0.0.1"
+# Please use the NLTK Downloader to obtain the resource
+import nltk
+nltk.download("all")
 ```
 
 ### DeepDoc

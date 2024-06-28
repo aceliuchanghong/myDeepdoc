@@ -226,16 +226,20 @@ def ocr_it(input_file, threshold, mode, cut_pics):
     output_dir = os.path.join(work_dir, ocr_path)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
+    tsr_output_dir = os.path.join(work_dir, tsr_output_dir)
+    if not os.path.exists(tsr_output_dir):
+        os.makedirs(tsr_output_dir)
     print(input_file, threshold, mode)
     print(cut_pics)
     ocr = get_instance()
 
     if mode == '否':
+        print("输出路径:", output_dir)
         ocr_pic_show_layout, ocr_pic_show_ans = normal_ocr(ocr, cut_pics, threshold, output_dir)
         return ocr_pic_show_layout, ocr_pic_show_ans, ocr_pic_show_layout[start_default], start_default
     else:
+        print("输出路径:", tsr_output_dir)
         ocr_pic_show_layout, table_data_paths = normal_tsr_ocr(ocr, cut_pics, threshold, tsr_output_dir)
-        # print(ocr_pic_show_layout)
         return ocr_pic_show_layout, table_data_paths, ocr_pic_show_layout[start_default], start_default
 
 
