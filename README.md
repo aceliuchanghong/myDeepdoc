@@ -32,6 +32,8 @@ conda activate myDeepdoc
 # 删除里面有win的3个包
 pip install -r requirements.txt
 pip freeze > requirements.txt
+# 修改utils.py   vi utils.py  /mnt/data/llch/myDeepdoc
+PROJECT_BASE = r"D:\aProject\py\myDeepdoc"
 # 可能有一些报错:please enable stickiness to ensure that all requests from the same user are routed to the same instance.
 export no_proxy="localhost,127.0.0.1"
 # Please use the NLTK Downloader to obtain the resource
