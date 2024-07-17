@@ -256,11 +256,11 @@ def create_app():
                                          step=0.1, scale=4, info="设置置信度")
             str_mode = gr.Dropdown(label='表格模式', choices=['是', '否'], value='否', scale=2, interactive=True,
                                    info='图片开启表格识别,精度下降')
-            submit_button = gr.Button(value='Generate', variant='primary', scale=4)
+            submit_button = gr.Button(value='开始识别', variant='primary', scale=4)
         # 操作
         with gr.Row():
-            old_one = gr.Button(value='last one', variant='secondary', scale=5)
-            next_one = gr.Button(value='next one', variant='secondary', scale=5)
+            old_one = gr.Button(value='查看上一图片', variant='secondary', scale=5)
+            next_one = gr.Button(value='查看下一图片', variant='secondary', scale=5)
         # 隐藏参数界面
         with gr.Row():
             cut_pic = gr.Dropdown(label='切分图片列表', choices=[], visible=False, allow_custom_value=True)
