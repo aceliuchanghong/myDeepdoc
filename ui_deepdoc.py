@@ -10,6 +10,8 @@ from vision.seeit import draw_box
 from PIL import Image
 import pandas as pd
 import re
+import threading
+from langchain_openai import ChatOpenAI
 
 _instance = None
 
@@ -20,6 +22,24 @@ def get_instance():
         ocr = OCR()
         _instance = ocr
     return _instance
+
+
+class LLM:
+    _instance = None
+    _lock = threading.Lock()
+
+    def __new__(cls, *args, **kwargs):
+        with cls._lock:
+            if not cls._instance:
+                cls._instance = ChatOpenAI(
+                    model='qwen57Bfp16:latest',
+                    api_key='qwen2',
+                    openai_api_base="http://112.48.199.202:11434/v1/"
+                )
+        return cls._instance
+
+
+llm = LLM()
 
 
 def get_table_data(img, tb_cpns, ocr):
@@ -270,15 +290,54 @@ def create_app():
         # 结果页面
         with gr.Row():
             pic_ocr = gr.Image(label='识别预览', scale=5)
+            # 文本框
             ans = gr.Textbox(info='识别结果', scale=5, lines=20)
             # 显示表格数据
             ans_table = gr.DataFrame(label='表格结果', scale=5, visible=False)
+        # 聊天部分
+        with gr.Row():
+            chatbot = gr.Chatbot()
+        with gr.Row():
+            with gr.Column(scale=8):
+                msg = gr.Textbox(placeholder="输入想要询问的信息")
+                gr.Examples(["合同的签订日期是什么时候？", "产品的数量和单价分别是多少？", "这份合同的流水号是什么？",
+                             "这份合同的供方和需方分别是哪两家公司？", "供方和需方的传真号码分别是什么？",
+                             "帮我将内容总结成字典形式", "供方和需方的联系电话分别是什么？", "SOB编号是多少?",
+                             "采购订单的合同编号是什么？"],
+                            msg)
+            with gr.Column(scale=2):
+                button_click = gr.Button('发送')
+                clear = gr.Button("清除信息")
 
         def update_components(mode):
             threshold = 0.5 if mode == '是' else 0.9
             ans_visible = mode == '否'
             ans_table_visible = mode == '是'
             return threshold, gr.update(visible=ans_visible), gr.update(visible=ans_table_visible)
+
+        def chat_response(user_message, history, ans_txt, current_index):
+            # 首先添加用户消息到历史记录
+            history = history + [[user_message, None]]
+
+            # 然后生成机器人的回复
+            current_index = int(current_index)
+            file_path = ans_txt[current_index]
+            with open(file_path, 'r', encoding='utf-8') as f:
+                contents = f.read()
+
+            prompt = "以下是图片OCR识别的结果:\n```\n"
+            end = "\n```\n就上述信息回答以下问题,尽可能简短,仅给出答案即可:\n"
+            msgs = prompt + contents + end + user_message
+            print("\n" + msgs + "\n")
+            bot_message = llm.invoke(msgs).content
+
+            # 逐字符添加机器人的回复
+            history[-1][1] = ""
+            for character in bot_message:
+                history[-1][1] += character
+                import time
+                time.sleep(0.02)
+                yield history
 
         # movement
         str_mode.change(fn=update_components, inputs=str_mode, outputs=[threshold_slider, ans, ans_table])
@@ -288,6 +347,14 @@ def create_app():
         old_one.click(fn=select_file_old, inputs=[ans_pic, current_index], outputs=[pic_ocr, current_index])
         next_one.click(fn=select_file_new, inputs=[ans_pic, current_index], outputs=[pic_ocr, current_index])
         pic_ocr.change(fn=get_ans, inputs=[ans_txt, current_index], outputs=[ans, ans_table])
+
+        button_click.click(fn=chat_response,
+                           inputs=[msg, chatbot, ans_txt, current_index],
+                           outputs=chatbot)
+        msg.submit(fn=chat_response,
+                   inputs=[msg, chatbot, ans_txt, current_index],
+                   outputs=chatbot)
+        clear.click(lambda: None, None, chatbot, queue=False)
     return demo
 
 
