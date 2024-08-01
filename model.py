@@ -178,7 +178,7 @@ class InvoiceAndAcceptanceConvention(NamingRule):
         return {
             "customer_name": "[此处填充客户名称]",
             "specialist_name": "[此处填充业务专员名字]",
-            "apply_date": "[此处填充年月eg:202005]",
+            "apply_date": "[此处填充开票日期年月eg:202005]",
             "invoice": "[此处填充发票号]"
         }
 
@@ -200,7 +200,7 @@ class InvoiceAndAcceptanceConvention(NamingRule):
             self.receipt = attributes.get("receipt", "DK")
             self.name = f"{self.customer_name}{self.coon}{self.receipt}{self.coon}{self.specialist_name}{self.coon}{self.apply_date}"
         else:
-            self.invoice = attributes.get("invoice", "DK")
+            self.invoice = attributes.get("invoice", "DK").replace(",","-")
             self.name = f"{self.customer_name}{self.coon}{self.specialist_name}{self.coon}{self.apply_date}{self.coon}{self.invoice}"
 
 
