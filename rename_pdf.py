@@ -88,7 +88,8 @@ if __name__ == '__main__':
     conda activate myDeepdoc
     python rename_pdf.py --type 1
     python rename_pdf.py --f C:\\Users\liuch\Documents\合合科技\测试文件样本4\采购合同2.pdf --out C:\\Users\liuch\Documents\\00
-    python rename_pdf.py --f C:\\Users\liuch\Documents\合合科技\测试文件样本3\发票单\发票签收单2.pdf --type 4
+    python rename_pdf.py --f C:\\Users\liuch\Documents\合合科技\测试文件样本3\发票单\发票签收单2.pdf --type 4 --out C:\\Users\liuch\Documents\\00
+    python rename_pdf.py --f C:\\Users\liuch\Documents\合合科技\测试文件样本3\发票单\发票签收单2.pdf --type 4 --spe 2 --out C:\\Users\liuch\Documents\\00
     python rename_pdf.py --dir C:\\Users\liuch\Documents\合合科技\测试文件样本4 --out C:\\Users\liuch\Documents\\00
     python rename_pdf.py --dir /mnt/data/llch/deepdoc2/myDeepdoc/input/测试文件样本4 --out /mnt/data/llch/deepdoc2/myDeepdoc/output/4
     """
@@ -97,7 +98,7 @@ if __name__ == '__main__':
                         help='pdf文档绝对路径')
     parser.add_argument('--type', default='1', help='文档类型')
     parser.add_argument('--out', default='/mnt/data/llch/deepdoc2/myDeepdoc/output/4', help='输出路径')
-    parser.add_argument('--spe', default='', help='特别指定')
+    parser.add_argument('--spe', default='', help='特别指定模式')
     parser.add_argument('--dir', default='', help='pdf文件夹绝对路径')
     parser.add_argument('--retry', default=3, type=int, help='重跑次数')
     opt = parser.parse_args()
