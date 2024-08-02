@@ -29,6 +29,13 @@ def read_files(ocr_pic_show_ans):
 
 
 def handle_file(file_path, opt):
+    out_path = opt.out
+    error_path = os.path.join(opt.out, 'error')
+    if not os.path.exists(out_path):
+        os.makedirs(out_path)
+    if not os.path.exists(error_path):
+        os.makedirs(error_path)
+
     llm = LLM()
     file_convention = file_convention_mapping[opt.type]
     new_file = FileConventionFactory.create_file_convention(file_convention)
@@ -55,16 +62,11 @@ def handle_file(file_path, opt):
             break  # 如果成功，退出循环
         except Exception as e:
             print(f"Error encountered: {e}. Retrying...")
+            if _ == retries - 1:
+                shutil.copy(file_path, error_path)
 
 
 def main(opt):
-    out_path = opt.out
-    error_path = os.path.join(opt.out, 'error')
-    if not os.path.exists(out_path):
-        os.makedirs(out_path)
-    if not os.path.exists(error_path):
-        os.makedirs(error_path)
-
     if opt.dir:
         for root, _, files in os.walk(opt.dir):
             for file in files:
@@ -74,13 +76,11 @@ def main(opt):
                         handle_file(file_path, opt)
                     except Exception as e:
                         logger.error(f'error:{file_path}')
-                        shutil.copy(file_path, error_path)
     else:
         try:
             handle_file(opt.f, opt)
         except Exception as e:
             logger.error(f'error:{opt.f}')
-            shutil.copy(opt.f, error_path)
 
 
 if __name__ == '__main__':
