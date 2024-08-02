@@ -1,9 +1,12 @@
 import argparse
 import os
 import shutil
-
+import logging
 from model import FileConventionFactory, LLM
 from ui_deepdoc import process_file, ocr_it
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 file_convention_mapping = {
     "1": "PurchaseOrderContract",
@@ -35,6 +38,7 @@ def handle_file(file_path, opt):
     cut_pics, _ = process_file(file_path)
     _, ocr_pic_show_ans, _, _ = ocr_it(file_path, 0.9, '否', cut_pics)
     ocr_content = read_files(ocr_pic_show_ans)
+    logger.debug(ocr_content)
 
     msgs = new_file.prompt_start + ocr_content + new_file.prompt_end + str(new_file.set_rule()) + "\n"
 
@@ -42,6 +46,7 @@ def handle_file(file_path, opt):
     for _ in range(retries):
         try:
             result = llm.invoke(msgs).content
+            logger.debug(result)
             new_file.translate_json(result)
             new_name = new_file.name
             new_path = os.path.join(opt.out, new_name + '.pdf')
@@ -55,10 +60,10 @@ def handle_file(file_path, opt):
 def main(opt):
     out_path = opt.out
     error_path = os.path.join(opt.out, 'error')
-    if not os.path.exists(error_path):
-        os.makedirs(error_path)
     if not os.path.exists(out_path):
         os.makedirs(out_path)
+    if not os.path.exists(error_path):
+        os.makedirs(error_path)
 
     if opt.dir:
         for root, _, files in os.walk(opt.dir):
@@ -68,13 +73,13 @@ def main(opt):
                     try:
                         handle_file(file_path, opt)
                     except Exception as e:
-                        print(f'error:{file_path}')
+                        logger.error(f'error:{file_path}')
                         shutil.copy(file_path, error_path)
     else:
         try:
             handle_file(opt.f, opt)
         except Exception as e:
-            print(f'error:{opt.f}')
+            logger.error(f'error:{opt.f}')
             shutil.copy(opt.f, error_path)
 
 
@@ -82,15 +87,16 @@ if __name__ == '__main__':
     """
     conda activate myDeepdoc
     python rename_pdf.py --type 1
-    python rename_pdf.py --f C:\\Users\liuch\Documents\合合科技\测试文件样本4\采购合同2.pdf --type 1
+    python rename_pdf.py --f C:\\Users\liuch\Documents\合合科技\测试文件样本4\采购合同2.pdf --out C:\\Users\liuch\Documents\\00
     python rename_pdf.py --f C:\\Users\liuch\Documents\合合科技\测试文件样本3\发票单\发票签收单2.pdf --type 4
-    python rename_pdf.py --dir C:\\Users\liuch\Documents\合合科技\测试文件样本4 --type 1
+    python rename_pdf.py --dir C:\\Users\liuch\Documents\合合科技\测试文件样本4 --out C:\\Users\liuch\Documents\\00
+    python rename_pdf.py --dir /mnt/data/llch/deepdoc2/myDeepdoc/input/测试文件样本4 --out /mnt/data/llch/deepdoc2/myDeepdoc/output/4
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--f', default=r'C:\Users\liuch\Documents\合合科技\测试文件样本4\采购合同.pdf',
+    parser.add_argument('--f', default='/mnt/data/llch/deepdoc2/myDeepdoc/input/测试文件样本4/采购合同.pdf',
                         help='pdf文档绝对路径')
     parser.add_argument('--type', default='1', help='文档类型')
-    parser.add_argument('--out', default=r'C:\Users\liuch\Desktop\ocr', help='输出路径')
+    parser.add_argument('--out', default='/mnt/data/llch/deepdoc2/myDeepdoc/output/4', help='输出路径')
     parser.add_argument('--spe', default='', help='特别指定')
     parser.add_argument('--dir', default='', help='pdf文件夹绝对路径')
     parser.add_argument('--retry', default=3, type=int, help='重跑次数')
