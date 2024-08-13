@@ -43,9 +43,9 @@ def create_app():
                 with gr.Accordion("基本参数设置", open=False):
                     pdf_ocr_mode = gr.Dropdown(label='文档识别模式', choices=['auto', 'ocr', 'txt'], value='auto',
                                                interactive=True, info='默认auto,若效果不好建议尝试ocr')
-                    threshold_slider = gr.Slider(label="置信度(默认:0.5)", minimum=0.1, maximum=0.9, value=0.5,
-                                                 interactive=True, step=0.1,
-                                                 info="识别置信度,值越大结果越准确,但是可能忽略很多不准确的结果")
+                    threshold_slider = gr.Slider(label="置信度", minimum=0.1, maximum=0.9, value=0.5, step=0.1,
+                                                 interactive=True,
+                                                 info="默认0.5,识别置信度,值越大结果越准确,但是可能忽略很多不准确的结果")
                     save_pic_or_table_data = gr.Dropdown(label='表格保存为图片', choices=['是', '否'], value='是',
                                                          interactive=True,
                                                          info='pdf转化为word时,其中表格是否保存为图片,默认是,否-则保存为表格')
