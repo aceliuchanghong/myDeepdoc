@@ -336,7 +336,7 @@ def create_app():
             for character in bot_message:
                 history[-1][1] += character
                 import time
-                time.sleep(0.02)
+                time.sleep(0.001)
                 yield history
 
         # movement
