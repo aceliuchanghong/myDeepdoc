@@ -42,7 +42,7 @@ class LLM:
 llm = LLM()
 
 
-def get_table_data(img, tb_cpns, ocr):
+def get_table_data(img, tb_cpns, ocr, html=False):
     boxes = ocr(np.array(img))
     boxes = Recognizer.sort_Y_firstly(
         [{"x0": b[0][0], "x1": b[1][0],
@@ -96,7 +96,7 @@ def get_table_data(img, tb_cpns, ocr):
             b["H_right"] = spans[ii]["x1"]
             b["SP"] = ii
 
-    table_data = TableStructureRecognizer.construct_table(boxes, html=False)
+    table_data = TableStructureRecognizer.construct_table(boxes, html=html)
     return table_data
 
 
